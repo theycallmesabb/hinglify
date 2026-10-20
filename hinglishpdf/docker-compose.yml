@@ -1,0 +1,65 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: hinglishpdf-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: hinglishpdf
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d hinglishpdf"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  extractor:
+    build:
+      context: ./extractor
+      dockerfile: Dockerfile
+    container_name: hinglishpdf-extractor
+    restart: always
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c 'import urllib.request; urllib.request.urlopen(\"http://localhost:8000/health\")'"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: hinglishpdf-backend
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+      extractor:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/hinglishpdf
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      EXTRACTOR_URL: http://extractor:8000
+      STORAGE_DIR: /app/storage
+      API_SECRET_KEY: ${API_SECRET_KEY:-dev-secret-key}
+      LLM_PROVIDER: ${LLM_PROVIDER:-openai}
+      LLM_API_KEY: ${LLM_API_KEY:-mock-key}
+      LLM_MODEL: ${LLM_MODEL:-gpt-4o-mini}
+      LLM_BASE_URL: ${LLM_BASE_URL:-https://api.openai.com/v1}
+      MAX_CONCURRENT_CHUNKS: ${MAX_CONCURRENT_CHUNKS:-2}
+      MAX_RETRIES: ${MAX_RETRIES:-5}
+    volumes:
+      - storage_data:/app/storage
+
+volumes:
+  pgdata:
+  storage_data:
