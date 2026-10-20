@@ -217,7 +217,7 @@ export default function Home() {
   };
 
   return (
-    <div className="max-w-[960px] mx-auto py-6 px-5 pb-16">
+    <div className="max-w-[960px] mx-auto py-6 px-5 pb-16" suppressHydrationWarning>
       <Header />
 
       <h1 className="font-['Rozha_One',serif] font-normal text-[clamp(40px,9vw,84px)] leading-[1.05] mt-10 mb-3 text-left">
