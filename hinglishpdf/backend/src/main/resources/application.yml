@@ -1,0 +1,35 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: hinglishpdf-backend
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/hinglishpdf}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 25MB
+
+app:
+  api-key: ${API_SECRET_KEY:dev-secret-key}
+  extractor-url: ${EXTRACTOR_URL:http://localhost:8000}
+  storage-dir: ${STORAGE_DIR:./storage}
+  max-concurrent-chunks: ${MAX_CONCURRENT_CHUNKS:2}
+  max-retries: ${MAX_RETRIES:5}
+  llm:
+    provider: ${LLM_PROVIDER:openai}
+    api-key: ${LLM_API_KEY:mock-key}
+    model: ${LLM_MODEL:gpt-4o-mini}
+    base-url: ${LLM_BASE_URL:https://api.openai.com/v1}
