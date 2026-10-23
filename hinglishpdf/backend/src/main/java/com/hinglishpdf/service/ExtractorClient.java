@@ -21,12 +21,31 @@ public class ExtractorClient {
     private final RestClient restClient;
 
     public ExtractorClient(@Value("${app.extractor-url:http://localhost:8000}") String extractorUrl) {
+        String url = (extractorUrl != null && !extractorUrl.isBlank()) ? extractorUrl.trim() : "http://localhost:8000";
+
+        // If missing scheme (e.g. Render internal host "hinglify-extractor" or "hinglify-extractor.onrender.com")
+        if (!url.startsWith("http://") && !url.startsWith("https://")) {
+            if (url.endsWith(".onrender.com")) {
+                url = "https://" + url;
+            } else {
+                url = "http://" + url;
+            }
+        }
+
+        // If internal host without port, append :8000
+        String authority = url.substring(url.indexOf("://") + 3);
+        if (!url.contains(".onrender.com") && !authority.contains(":")) {
+            url = url + ":8000";
+        }
+
+        log.info("Initialized ExtractorClient with resolved absolute URL: {}", url);
+
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
         requestFactory.setConnectTimeout(Duration.ofSeconds(15));
         requestFactory.setReadTimeout(Duration.ofSeconds(60));
 
         this.restClient = RestClient.builder()
-                .baseUrl(extractorUrl)
+                .baseUrl(url)
                 .requestFactory(requestFactory)
                 .build();
     }

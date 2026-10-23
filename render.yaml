@@ -20,10 +20,7 @@ services:
           name: hinglify-db
           property: connectionString
       - key: EXTRACTOR_URL
-        fromService:
-          type: web
-          name: hinglify-extractor
-          property: host
+        value: http://hinglify-extractor:8000
       - key: LLM_PROVIDER
         value: gemini
       - key: LLM_MODEL
