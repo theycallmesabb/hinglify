@@ -87,7 +87,8 @@ export default function Home() {
     setScreen("upload");
   };
 
-  const API_BASE = "http://localhost:8080";
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080";
+  const API_KEY = process.env.NEXT_PUBLIC_API_KEY || "dev-secret-key";
 
   const handleConvert = async () => {
     if (!file) return;
@@ -104,7 +105,7 @@ export default function Home() {
       const response = await fetch(`${API_BASE}/jobs`, {
         method: "POST",
         headers: {
-          "X-API-Key": "dev-secret-key",
+          "X-API-Key": API_KEY,
         },
         body: formData,
       });
@@ -140,7 +141,7 @@ export default function Home() {
       try {
         const res = await fetch(`${API_BASE}/jobs/${id}`, {
           headers: {
-            "X-API-Key": "dev-secret-key",
+            "X-API-Key": API_KEY,
           },
         });
         if (!res.ok) return;
@@ -186,7 +187,7 @@ export default function Home() {
     try {
       const chunksRes = await fetch(`${API_BASE}/jobs/${id}/chunks`, {
         headers: {
-          "X-API-Key": "dev-secret-key",
+          "X-API-Key": API_KEY,
         },
       });
       if (chunksRes.ok) {

@@ -2,7 +2,8 @@
 
 Convert English PDFs into fluent, natural spoken Hinglish (Hindi grammar in Roman script, technical terms in English) with sentence-by-sentence precision and download a beautifully styled PDF.
 
-![Hinglify Preview](https://raw.githubusercontent.com/user/repo/main/preview.png) *(or local preview)*
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://dashboard.render.com/blueprints/new?repo=https://github.com/theycallmesabb/hinglify)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/theycallmesabb/hinglify)
 
 ---
 
