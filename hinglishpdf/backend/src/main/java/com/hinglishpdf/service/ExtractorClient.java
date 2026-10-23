@@ -41,8 +41,8 @@ public class ExtractorClient {
         log.info("Initialized ExtractorClient with resolved absolute URL: {}", url);
 
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
-        requestFactory.setConnectTimeout(Duration.ofSeconds(15));
-        requestFactory.setReadTimeout(Duration.ofSeconds(60));
+        requestFactory.setConnectTimeout(Duration.ofSeconds(45));
+        requestFactory.setReadTimeout(Duration.ofSeconds(120));
 
         this.restClient = RestClient.builder()
                 .baseUrl(url)
@@ -53,20 +53,34 @@ public class ExtractorClient {
     public ExtractorResponse extractText(Path filePath) {
         log.info("Sending file {} to extractor", filePath);
 
-        // Use standard LinkedMultiValueMap to avoid reactive-streams dependency issues
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
         body.add("file", new FileSystemResource(filePath.toFile()));
 
-        ExtractorResponse response = restClient.post()
-                .uri("/extract")
-                .body(body)
-                .retrieve()
-                .body(ExtractorResponse.class);
+        Exception lastException = null;
+        for (int attempt = 1; attempt <= 4; attempt++) {
+            try {
+                ExtractorResponse response = restClient.post()
+                        .uri("/extract")
+                        .body(body)
+                        .retrieve()
+                        .body(ExtractorResponse.class);
 
-        log.info("Received extractor response: {} pages, {} chars",
-                response != null ? response.pageCount() : 0,
-                response != null ? response.totalChars() : 0);
+                log.info("Received extractor response: {} pages, {} chars",
+                        response != null ? response.pageCount() : 0,
+                        response != null ? response.totalChars() : 0);
+                return response;
+            } catch (Exception e) {
+                lastException = e;
+                log.warn("Attempt {} to reach extractor failed: {}. Retrying in 5s...", attempt, e.getMessage());
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException ignored) {}
+            }
+        }
 
-        return response;
+        if (lastException instanceof RuntimeException re) {
+            throw re;
+        }
+        throw new RuntimeException("Extractor service unreachable after retries: " + (lastException != null ? lastException.getMessage() : "unknown error"));
     }
 }
